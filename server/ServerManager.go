@@ -22,7 +22,10 @@ func (s *ServerManager) StartServer() {
 
 	router.Path("/items").Methods("POST").HandlerFunc(s.httpHandlers.HandleCreateItem)
 	router.Path("/items/{item_id}").Methods("DELETE").HandlerFunc(s.httpHandlers.HandleDeleteItem)
+	router.Path("/items").Methods("GET").Queries("weight", "{weight}").HandlerFunc(s.httpHandlers.HandleGetItemsLighterThan)
 	router.Path("/items/{item_id}").Methods("GET").HandlerFunc(s.httpHandlers.HandleGetItem)
+	router.Path("/items").Methods("GET").HandlerFunc(s.httpHandlers.HandleGetAllItems)
+	router.Path("/items/{item_id}").Methods("PATCH").HandlerFunc(s.httpHandlers.HandleChangeItemTitle)
 
 	err := http.ListenAndServe(":9011", router)
 	if err != nil {

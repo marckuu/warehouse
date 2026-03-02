@@ -61,3 +61,18 @@ func (w *Warehouse) GetItemLighterThan(weight float64) map[string]models.Item {
 
 	return filteredItems
 }
+
+func (w *Warehouse) ChangeItemTitle(itemId string, title string) (models.Item, error) {
+	item, ok := w.items[itemId]
+	if !ok {
+		return models.Item{}, errors.ErrItemNotFound
+	}
+
+	if err := item.ChangeTitle(title); err != nil {
+		return models.Item{}, err
+	}
+
+	w.items[itemId] = item
+
+	return item, nil
+}

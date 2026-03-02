@@ -5,7 +5,9 @@ import (
 	"Warehouse/models"
 	"Warehouse/repository"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -84,6 +86,65 @@ func (h *HTTPHandlers) HandleGetItem(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	if _, err := w.Write(b); err != nil {
 		println("Ошибка при записи ответа с полученным товаром")
+	}
+
+}
+
+func (h *HTTPHandlers) HandleGetAllItems(w http.ResponseWriter, r *http.Request) {
+	items := h.warehouse.GetAllTItems()
+	b, err := json.Marshal(items)
+	if err != nil {
+		panic(err)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if _, writeErr := w.Write(b); writeErr != nil {
+		println("Ошибка при записи ответа со всеми товарами")
+	}
+}
+
+func (h *HTTPHandlers) HandleGetItemsLighterThan(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	weight := query.Get("weight")
+
+	weightConverted, err := strconv.ParseFloat(weight, 64)
+	if err != nil {
+		SendErrorResponse(w, err, http.StatusInternalServerError)
+	}
+
+	filteredItems := h.warehouse.GetItemLighterThan(weightConverted)
+
+	b, convertErr := json.Marshal(filteredItems)
+	if convertErr != nil {
+		panic(err)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if _, writeErr := w.Write(b); writeErr != nil {
+		fmt.Println("Ошибка при записи ответа с товарами легче указанного веса")
+	}
+}
+
+func (h *HTTPHandlers) HandleChangeItemTitle(w http.ResponseWriter, r *http.Request) {
+	itemId := mux.Vars(r)["item_id"]
+
+	request := dto.NewChangeItemTitleRequest("")
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		SendErrorResponse(w, err, http.StatusBadRequest)
+	}
+
+	item, err := h.warehouse.ChangeItemTitle(itemId, request.Title)
+	if err != nil {
+		SendErrorResponse(w, err, http.StatusNotFound)
+	}
+
+	b, convertErr := json.Marshal(item)
+	if convertErr != nil {
+		panic(convertErr)
+	}
+
+	if _, writeErr := w.Write(b); writeErr != nil {
+		fmt.Println("Ошибка при записи ответа с измененым товаром")
 	}
 
 }

@@ -13,3 +13,13 @@ func NewErrorResponse(message string) ErrorResponse {
 		Time:    time.Now(),
 	}
 }
+
+type ChangeItemTitleRequest struct {
+	Title string
+}
+
+func NewChangeItemTitleRequest(title string) ChangeItemTitleRequest {
+	return ChangeItemTitleRequest{
+		Title: title,
+	}
+}
