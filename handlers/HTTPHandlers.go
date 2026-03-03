@@ -25,12 +25,8 @@ func NewHTTPHandlers() HTTPHandlers {
 func SendErrorResponse(w http.ResponseWriter, err error, status int) {
 	w.WriteHeader(status)
 	errorResponse := dto.NewErrorResponse(err.Error())
-	res, convertErr := json.Marshal(errorResponse)
-	if convertErr != nil {
-		panic(convertErr)
-	}
-	if _, writeErr := w.Write(res); writeErr != nil {
-		println("Ошибка при записи ответа с информацией об ошибке")
+	if convertErr := json.NewEncoder(w).Encode(errorResponse); convertErr != nil {
+		fmt.Println("Ошибка при записи ответа с информацией об ошибке")
 	}
 }
 
@@ -49,11 +45,7 @@ func (h *HTTPHandlers) HandleCreateItem(w http.ResponseWriter, r *http.Request) 
 
 	w.WriteHeader(http.StatusCreated)
 
-	b, convertErr := json.Marshal(item)
-	if convertErr != nil {
-		panic(convertErr)
-	}
-	if _, err := w.Write(b); err != nil {
+	if convertErr := json.NewEncoder(w).Encode(item); convertErr != nil {
 		println("Ошибка при записи ответа с созданным товаром")
 	}
 }
@@ -78,27 +70,17 @@ func (h *HTTPHandlers) HandleGetItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b, convertErr := json.Marshal(item)
-	if convertErr != nil {
-		panic(convertErr)
-	}
-
 	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write(b); err != nil {
+	if convertErr := json.NewEncoder(w).Encode(item); convertErr != nil {
 		println("Ошибка при записи ответа с полученным товаром")
 	}
-
 }
 
 func (h *HTTPHandlers) HandleGetAllItems(w http.ResponseWriter, r *http.Request) {
 	items := h.warehouse.GetAllTItems()
-	b, err := json.Marshal(items)
-	if err != nil {
-		panic(err)
-	}
 
 	w.WriteHeader(http.StatusOK)
-	if _, writeErr := w.Write(b); writeErr != nil {
+	if err := json.NewEncoder(w).Encode(items); err != nil {
 		println("Ошибка при записи ответа со всеми товарами")
 	}
 }
@@ -114,13 +96,8 @@ func (h *HTTPHandlers) HandleGetItemsLighterThan(w http.ResponseWriter, r *http.
 
 	filteredItems := h.warehouse.GetItemLighterThan(weightConverted)
 
-	b, convertErr := json.Marshal(filteredItems)
-	if convertErr != nil {
-		panic(err)
-	}
-
 	w.WriteHeader(http.StatusOK)
-	if _, writeErr := w.Write(b); writeErr != nil {
+	if convertErr := json.NewEncoder(w).Encode(filteredItems); convertErr != nil {
 		fmt.Println("Ошибка при записи ответа с товарами легче указанного веса")
 	}
 }
@@ -138,13 +115,8 @@ func (h *HTTPHandlers) HandleChangeItemTitle(w http.ResponseWriter, r *http.Requ
 		SendErrorResponse(w, err, http.StatusNotFound)
 	}
 
-	b, convertErr := json.Marshal(item)
-	if convertErr != nil {
-		panic(convertErr)
-	}
-
-	if _, writeErr := w.Write(b); writeErr != nil {
+	w.WriteHeader(http.StatusOK)
+	if convertErr := json.NewEncoder(w).Encode(item); convertErr != nil {
 		fmt.Println("Ошибка при записи ответа с измененым товаром")
 	}
-
 }
